@@ -46,45 +46,6 @@ def read_all_func():
     todos = convert_object_id(todos)
     return jsonify({'data': todos})
 
-def get_grouped_data():
-    data = [
-        {
-            "$group": {
-                "_id": "$title",
-                "items": {
-                    "$addToSet": {
-                        "_id": {"$toString": "$_id"},
-                        "description": "$description"
-                    }
-                }
-            }
-        },
-        {
-            "$group": {
-                "_id": None,
-                "result": {
-                    "$addToSet": {
-                        "k": "$_id",
-                        "v": "$items"
-                    }
-                }
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "result": {
-                    "$arrayToObject": "$result"
-                }
-            }
-        }
-    ]
-
-
-    grouped_data = list(todo_collection.aggregate(data))[0]['result']
-
-    return jsonify(grouped_data)
-
 
 def update_func(id):
     data = request.get_json()
@@ -105,12 +66,12 @@ def delete_func(id):
     return jsonify({'message': 'Task deleted successfully'})
 
 app.add_url_rule(rule='/', view_func=home_func, methods=['GET'])
-app.add_url_rule(rule='/create', view_func=create_func, methods=['POST'])
-app.add_url_rule(rule='/read/<id>', view_func=read_func, methods=['GET'])
-app.add_url_rule(rule='/read', view_func=read_all_func, methods=['GET'])
-app.add_url_rule(rule='/update/<id>', view_func=update_func, methods=['PUT'])
-app.add_url_rule(rule='/delete/<id>', view_func=delete_func, methods=['DELETE'])
-app.add_url_rule(rule='/get_data', view_func=get_grouped_data, methods=['GET'])
+app.add_url_rule(rule='/tasks', view_func=create_func, methods=['POST'])
+app.add_url_rule(rule='/tasks', view_func=read_all_func, methods=['GET'])
+app.add_url_rule(rule='/tasks/<id>', view_func=read_func, methods=['GET'])
+app.add_url_rule(rule='/tasks/<id>', view_func=update_func, methods=['PUT'])
+app.add_url_rule(rule='/tasks/<id>', view_func=delete_func, methods=['DELETE'])
+
 
 if __name__ == '__main__':
     app.run(debug=True)
