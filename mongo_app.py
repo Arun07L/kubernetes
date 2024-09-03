@@ -7,9 +7,10 @@ along with a bulk creation feature. Each task is stored in a MongoDB collection 
 from flask import Flask, request, jsonify
 from pymongo import MongoClient,ReturnDocument
 
+
 app = Flask(__name__)
-app.config['MONGO_URI'] = 'mongodb://localhost:27017'
-client = MongoClient(app.config['MONGO_URI'])
+
+client = MongoClient('mongodb://localhost:27017')
 db = client.get_database('todo_db')
 
 # Collection reference
