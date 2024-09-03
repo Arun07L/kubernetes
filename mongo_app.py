@@ -139,7 +139,8 @@ def read_all_func():
         response (json): A JSON response containing all tasks in the database.
     """
     todos = todo_collection.find()
-    return jsonify(todos), 200
+    todo_lists = list(todos)
+    return jsonify(todo_lists), 200
 
 def update_func(id):
     """
