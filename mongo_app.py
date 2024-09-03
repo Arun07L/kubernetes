@@ -5,17 +5,57 @@ along with a bulk creation feature. Each task is stored in a MongoDB collection 
 """
 
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
+from pymongo import MongoClient,ReturnDocument
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://localhost:27017'
-app.config['Counter'] = 0
 client = MongoClient(app.config['MONGO_URI'])
 db = client.get_database('todo_db')
 
 # Collection reference
 todo_collection = db.todos
 
+def get_id():
+    """
+    Increments and Retrieves the current sequence value in the 'todo_id' counter.
+
+    This function updates the 'seq' field in the 'todo_id' document within the MongoDB collection.
+    It atomically increments the sequence value by 1 and returns the updated value.
+
+    Returns:
+        int: The updated sequence value after incrementing.
+    """
+    counter = todo_collection.find_one_and_update(
+        {'_id': 'todo_id'},
+        {'$inc': {'seq': 1}},
+        return_document=ReturnDocument.AFTER,
+        upsert=True
+    )
+    return counter['seq']
+
+def get_ids(count):
+    """
+    Increments and Retrieves the current sequence value to generate a range of IDs in the 'todo_id' counter.
+
+    This function updates the 'seq' field in the 'todo_id' document within the MongoDB collection.
+    It atomically increments the sequence value by the specified number of IDs (count) and returns a tuple
+    containing the start and end of the ID range.
+
+    Args:
+        count (int): The number of sequential IDs to generate.
+
+    Returns:
+        tuple: A tuple containing two integers:
+            - The starting sequence value for the range of IDs.
+            - The ending sequence value for the range of IDs.
+    """
+    counter = todo_collection.find_one_and_update(
+        {'_id': 'todo_id'},
+        {"$inc": {"seq": count}},
+        return_document=ReturnDocument.AFTER,
+        upsert=True
+    )
+    return counter['seq'] - count + 1, counter['seq']
 def home_func():
     """
     This function handles the default route and returns a welcome message.
@@ -23,7 +63,7 @@ def home_func():
     Returns:
         response (json): A JSON response containing a welcome message.
     """
-    return jsonify({'message': "Welcome to TODO Application"})
+    return jsonify({'message': "Welcome to TODO Application"}),200
 
 def create_func():
     """
@@ -38,15 +78,14 @@ def create_func():
         response (json): A JSON response containing a success message and the generated ID for the task.
     """
     data = request.get_json()
-    app.config['Counter'] += 1
     todo = {
         'title': data['title'],
         'description': data['description'],
         'status': data['status'],
-        '_id': app.config['Counter']
+        '_id': get_id()
     }
     todo_collection.insert_one(todo)
-    return jsonify({'message': 'Task added successfully', '_id': todo['_id']}), 200
+    return jsonify({'message': 'Task added successfully', '_id': todo['_id']}), 201
 
 def create_bulk():
     """
@@ -63,17 +102,18 @@ def create_bulk():
         response (json): A JSON response containing a success message.
     """
     data = request.get_json()
-    if not data:
-        return jsonify({'message': 'No data provided'}), 400
 
     count = len(data)
-    ids = list(range(app.config['Counter'] + 1, app.config['Counter'] + count + 1))
+    start_id, end_id = get_ids(count)
+
+    # Generate the range of IDs
+    ids = list(range(start_id, end_id + 1))
+
+    # Update the data with the generated IDs
     updated_data = list(map(lambda record, id_value: {**record, '_id': id_value}, data, ids))
 
-    app.config['Counter'] += count
-
     todo_collection.insert_many(updated_data)
-    return jsonify({'message': 'Tasks added successfully'}), 200
+    return jsonify({'message': 'Tasks added successfully'}), 201
 
 def read_func(id):
     """
@@ -145,8 +185,6 @@ def partial_update_func(id):
                          otherwise a 404 error message.
     """
     data = request.get_json()
-    if not data:
-        return jsonify({'message': 'No data provided'}), 400
 
     result = todo_collection.update_one({'id': int(id)}, {'$set': data})
 
