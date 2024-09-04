@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
-from decouple import config
 from bson.objectid import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
 
-client = MongoClient(config("MONGO_URI"))
+client = MongoClient("mongodb://localhost:27017")
 db = client.get_database("todo_db")
 
 todo_collection = db.todos
