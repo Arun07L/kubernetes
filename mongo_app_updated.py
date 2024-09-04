@@ -1,7 +1,10 @@
 """
 This module allows users to manage the CRUD operations for tasks in a TODO application.
-It provides endpoints for creating, reading, updating, and deleting tasks,
-along with a bulk creation feature. Each task is stored in a MongoDB collection with a custom ID generation.
+It provides endpoints for creating, reading, updating, and deleting tasks.
+Each task is stored in a MongoDB collection.
+:Author: Arunkumar <arunkumar@kissflow.com>
+:Date: 04/09/2024
+
 """
 
 from flask import Flask, request, jsonify
@@ -27,15 +30,18 @@ def create_func():
        Returns:
            response (json): A JSON response containing a success message.
        """
-    data = request.get_json()
-    todo = {
-        "task": data["task"],
-        "description": data["description"],
-        "status": "bending",
-        "created_at" : datetime.utcnow()
-    }
-    todo_collection.insert_one(todo)
-    return jsonify({"message": "Task added successfully"}), 201
+    try:
+        data = request.get_json()
+        todo = {
+            "Task": data["task"],
+            "Description": data["description"],
+            "Status": "bending",
+            "Created_at" : datetime.now()
+        }
+        todo_collection.insert_one(todo)
+        return jsonify({"message": "Task added successfully"}), 201
+    except KeyError as e:
+        return jsonify(({"The error occur in Key Name is ": str(e)})),500
 
 def read_func():
     """
@@ -45,8 +51,8 @@ def read_func():
             response (json): A JSON response containing all tasks in the database.
         """
     todos = todo_collection.find()
-    updated_datas = [{**record, '_id': str(record["_id"])} for record in todos]  # optimized
-    return jsonify({"data" : updated_datas}),200
+    updated_datas = [{**record, "_id": str(record["_id"])} for record in todos]  # optimized
+    return jsonify({"Tasks" : updated_datas}),200
 
 def update_func(id):
     """
@@ -63,15 +69,18 @@ def update_func(id):
         Returns:
             response (json): A JSON response containing a success message
         """
-    data = request.get_json()
-    update_task = {
-        "task" : data["task"],
-        'description': data['description']
-    }
-    result = todo_collection.update_one({'_id': ObjectId(id)}, {'$set': update_task})
-    if result.matched_count == 0:
-        return jsonify({'error': 'Task not found'}), 404
-    return jsonify({'message': 'Task updated successfully'}), 200
+    try:
+        data = request.get_json()
+        update_task = {
+            "Task" : data["task"],
+            "Description": data["description"]
+        }
+        result = todo_collection.update_one({"_id": ObjectId(id)}, {"$set": update_task})
+        if result.matched_count == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        return jsonify({'message': 'Task updated successfully'}), 200
+    except KeyError as e:
+        return jsonify(({"The error occur in Key Name is ": str(e)})), 500
 
 def patch_update_func(id):
     """
@@ -86,11 +95,14 @@ def patch_update_func(id):
            Returns:
                response (json): A JSON response containing a success message
            """
-    data = request.get_json()
-    result = todo_collection.update_one({'_id': ObjectId(id)}, {'$set': {"status": data["status"]}})
-    if result.matched_count == 0:
-        return jsonify({'error': 'Task not found'}), 404
-    return jsonify({'message': 'Task updated successfully'}), 200
+    try:
+        data = request.get_json()
+        result = todo_collection.update_one({'_id': ObjectId(id)}, {'$set': {"Status": data["status"]}})
+        if result.matched_count == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        return jsonify({'message': 'Task updated successfully'}), 200
+    except KeyError as e:
+        return jsonify(({"The error occur in Key Name is ": str(e)})), 500
 
 def delete_func(id):
     """
