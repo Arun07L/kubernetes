@@ -23,7 +23,7 @@ def create_func():
 
 def read_func():
     todos = todo_collection.find()
-    updated_datas = list(map(lambda record: {**record, '_id': str(record["_id"])}, list(todos)))
+    updated_datas = [{**record, '_id': str(record["_id"])} for record in todos]
     return jsonify({"data" : updated_datas}),200
 
 def update_func(id):
