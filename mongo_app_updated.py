@@ -11,6 +11,8 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
+import json
+
 
 app = Flask(__name__)
 
@@ -33,10 +35,9 @@ def create_func():
     try:
         data = request.get_json()
         todo = {
-            "Task": data["task"],
-            "Description": data["description"],
-            "Status": "bending",
-            "Created_at" : datetime.now()
+            "task": data["task"],
+            "description": data["description"],
+            "status": data['status']
         }
         todo_collection.insert_one(todo)
         return jsonify({"message": "Task added successfully"}), 201
@@ -50,8 +51,15 @@ def read_func():
         Returns:
             response (json): A JSON response containing all tasks in the database.
         """
+    page = request.args.get('page')
+    per_page = request.args('limit')
     todos = todo_collection.find()
+    skip_page = (int(page) - 1) * per_page
+
+    todos = todo_collection.find().skip(skip_page).limit(per_page)
+
     updated_datas = [{**record, "_id": str(record["_id"])} for record in todos]  # optimized
+
     return jsonify({"Tasks" : updated_datas}),200
 
 def update_func(id):
@@ -119,11 +127,17 @@ def delete_func(id):
         return jsonify({'error': 'Task not found'}), 404
     return jsonify({'message': 'Task deleted successfully'}), 200
 
+@app.route('/test')
+def test_json():
+    pass
+
+
 app.add_url_rule(rule='/tasks', view_func=create_func, methods=['POST'])
 app.add_url_rule(rule='/tasks', view_func=read_func, methods=['GET'])
 app.add_url_rule(rule='/tasks/<id>', view_func=update_func, methods=['PUT'])
 app.add_url_rule(rule='/tasks/<id>', view_func=patch_update_func, methods=['PATCH'])
 app.add_url_rule(rule='/tasks/<id>', view_func=delete_func, methods=['DELETE'])
+app.add_url_rule(rule='/test',view_func=test_json,methods=['GET'])
 
 if __name__ == "__main__":
     app.run(debug=True)
