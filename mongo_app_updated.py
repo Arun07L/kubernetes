@@ -11,7 +11,7 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
-import json
+
 
 
 app = Flask(__name__)
@@ -37,30 +37,53 @@ def create_func():
         todo = {
             "task": data["task"],
             "description": data["description"],
-            "status": data['status']
+            "status": data['status'],
+            'created_at' : datetime.now()
         }
         todo_collection.insert_one(todo)
         return jsonify({"message": "Task added successfully"}), 201
     except KeyError as e:
         return jsonify(({"The error occur in Key Name is ": str(e)})),500
 
+
 def read_func():
     """
-        This function retrieves all Todo tasks from the database using list comprehension to optimize the performance.
+        This function retrieves specified type of records or all Todo tasks from the database with sorted order and 
+        using list comprehension, pagination to optimize the performance.
+
+        The task data should be provided in the query parameters with the following fields:
+       - page (page number of the webpage)
+       - limit (range of the records)
+       - status (secified status)
+       - created_at (time)
 
         Returns:
-            response (json): A JSON response containing all tasks in the database.
-        """
-    page = request.args.get('page')
-    per_page = request.args('limit')
-    todos = todo_collection.find()
-    skip_page = (int(page) - 1) * per_page
+            response (json): A JSON response containing all tasks or specified type of tasks with .
+    """
+    # paginataion
+    page = int(request.args.get('page',0))
+    per_page = int(request.args.get('limit',0))
 
-    todos = todo_collection.find().skip(skip_page).limit(per_page)
+    # filter
+    status = request.args.get('status',None)
+    created_at = int(request.args.get('created_at',1))
+   
+    skip_page = (page - 1) * per_page
+
+    query = {}
+    if status:
+        query['status'] = status
+    
+
+    if page and per_page:
+        todos = todo_collection.find(query).sort({"created_at" : created_at}).skip(skip_page).limit(per_page)
+    else:
+        todos = todo_collection.find()
 
     updated_datas = [{**record, "_id": str(record["_id"])} for record in todos]  # optimized
 
     return jsonify({"Tasks" : updated_datas}),200
+
 
 def update_func(id):
     """
@@ -137,7 +160,7 @@ app.add_url_rule(rule='/tasks', view_func=read_func, methods=['GET'])
 app.add_url_rule(rule='/tasks/<id>', view_func=update_func, methods=['PUT'])
 app.add_url_rule(rule='/tasks/<id>', view_func=patch_update_func, methods=['PATCH'])
 app.add_url_rule(rule='/tasks/<id>', view_func=delete_func, methods=['DELETE'])
-app.add_url_rule(rule='/test',view_func=test_json,methods=['GET'])
+
 
 if __name__ == "__main__":
     app.run(debug=True)
