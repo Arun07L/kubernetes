@@ -8,7 +8,7 @@ Each task is stored in a MongoDB collection.
 """
 
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING, DESCENDING
 from bson.objectid import ObjectId
 from datetime import datetime
 
@@ -32,58 +32,71 @@ def create_func():
        Returns:
            response (json): A JSON response containing a success message.
        """
-    try:
-        data = request.get_json()
-        todo = {
-            "task": data["task"],
-            "description": data["description"],
-            "status": data['status'],
-            'created_at' : datetime.now()
-        }
-        todo_collection.insert_one(todo)
-        return jsonify({"message": "Task added successfully"}), 201
-    except KeyError as e:
-        return jsonify(({"The error occur in Key Name is ": str(e)})),500
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+    
+    todo = {
+        "task": data["task"],
+        "description": data["description"],
+        "status": data['status'],
+        'created_at' : datetime.now()
+    }
+    todo_collection.insert_one(todo)
+    return jsonify({"message": "Task added successfully"}), 201
+
 
 
 def read_func():
     """
-        This function retrieves specified type of records or all Todo tasks from the database with sorted order and 
-        using list comprehension, pagination to optimize the performance.
-
-        The task data should be provided in the query parameters with the following fields:
-       - page (page number of the webpage)
-       - limit (range of the records)
-       - status (secified status)
-       - created_at (time)
-
-        Returns:
-            response (json): A JSON response containing all tasks or specified type of tasks with .
-    """
-    # paginataion
-    page = int(request.args.get('page',0))
-    per_page = int(request.args.get('limit',0))
-
-    # filter
-    status = request.args.get('status',None)
-    created_at = int(request.args.get('created_at',1))
-   
-    skip_page = (page - 1) * per_page
-
-    query = {}
-    if status:
-        query['status'] = status
+    Retrieves Todo tasks from the database based on query parameters:
+    - Pagination: `page` and `limit`
+    - Filtering: `status`
+    - Sorting: `created_at` (ascending or descending)
     
+    Returns:
+        A JSON response with the list of tasks.
+    """
 
-    if page and per_page:
-        todos = todo_collection.find(query).sort({"created_at" : created_at}).skip(skip_page).limit(per_page)
-    else:
-        todos = todo_collection.find()
+    # validate query parameters
+    try:
+        page_no = int(request.args.get('page', 1))
+        record_limit = int(request.args.get('limit', 10))
 
-    updated_datas = [{**record, "_id": str(record["_id"])} for record in todos]  # optimized
+        if page_no < 1 or record_limit < 1:
+            return jsonify({"error": "Page number and limit must be greater than zero."}), 400
 
-    return jsonify({"Tasks" : updated_datas}),200
+    except ValueError:
+        return jsonify({"error": "Invalid parameters."}), 400
 
+    
+    # query filter
+    query = {}
+
+    status = request.args.get('status')
+    if status:
+        valid_statuses = ['completed', 'pending', 'in progress']  
+        if status.lower() in valid_statuses:
+            query['status'] = status
+        else:
+            return jsonify({"error": f"Invalid status. Allowed values: {valid_statuses}"}), 400
+    
+    # Sorting
+    created_at_sort = request.args.get('created_at', 'ascending').lower()
+    sort_order = ASCENDING if created_at_sort == 'ascending' else DESCENDING
+
+    # Pagination
+    offset = (page_no - 1) * record_limit
+    
+    # fetch the records based on `status` and `created_at`
+    todos = todo_collection.find(query).sort("created_at", sort_order).skip(offset).limit(record_limit)
+    
+    # serialize the result
+    updated_datas = [{**record, "_id": str(record["_id"])} for record in todos]
+
+    return jsonify({"Tasks": updated_datas}), 200
+    
 
 def update_func(id):
     """
@@ -100,18 +113,26 @@ def update_func(id):
         Returns:
             response (json): A JSON response containing a success message
         """
-    try:
-        data = request.get_json()
-        update_task = {
-            "Task" : data["task"],
-            "Description": data["description"]
-        }
-        result = todo_collection.update_one({"_id": ObjectId(id)}, {"$set": update_task})
-        if result.matched_count == 0:
-            return jsonify({'error': 'Task not found'}), 404
-        return jsonify({'message': 'Task updated successfully'}), 200
-    except KeyError as e:
-        return jsonify(({"The error occur in Key Name is ": str(e)})), 500
+   
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+    
+    task = data.get("task")
+    description = data.get("description")
+
+    if not task or not description:
+        return jsonify({'error': 'task and / or description not provided'}), 400
+    
+    update_task = {
+        "task" : task,
+        "description": description
+    }
+    result = todo_collection.update_one({"_id": ObjectId(id)}, {"$set": update_task})
+    if result.matched_count == 0:
+        return jsonify({'error': 'Task not found'}), 404
+    return jsonify({'message': 'Task updated successfully'}), 200
+    
 
 def patch_update_func(id):
     """
@@ -126,14 +147,16 @@ def patch_update_func(id):
            Returns:
                response (json): A JSON response containing a success message
            """
-    try:
-        data = request.get_json()
-        result = todo_collection.update_one({'_id': ObjectId(id)}, {'$set': {"Status": data["status"]}})
-        if result.matched_count == 0:
-            return jsonify({'error': 'Task not found'}), 404
-        return jsonify({'message': 'Task updated successfully'}), 200
-    except KeyError as e:
-        return jsonify(({"The error occur in Key Name is ": str(e)})), 500
+
+    data = request.args.get('status',None)
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+    
+    result = todo_collection.update_one({'_id': ObjectId(id)}, {'$set': {"status": data.capitalize()}})
+    if result.matched_count == 0:
+        return jsonify({'error': 'Task not found'}), 404
+    return jsonify({'message': 'Task updated successfully'}), 200
+
 
 def delete_func(id):
     """
@@ -146,13 +169,10 @@ def delete_func(id):
            response (json): A JSON response containing a success message
        """
     result = todo_collection.delete_one({'_id': ObjectId(id)})
-    if result.matched_count == 0:
+    if result.deleted_count == 0:
         return jsonify({'error': 'Task not found'}), 404
     return jsonify({'message': 'Task deleted successfully'}), 200
 
-@app.route('/test')
-def test_json():
-    pass
 
 
 app.add_url_rule(rule='/tasks', view_func=create_func, methods=['POST'])
