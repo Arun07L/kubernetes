@@ -1,0 +1,261 @@
+[
+  {
+    "_id": "Preview_Model001",
+    "_created_at": {
+      "v": {
+        "__type__": "datetime",
+        "isoformat": "2024-09-26T07:36:50.155Z"
+      },
+      "td": "",
+      "tz": "GMT",
+      "dv": "2024-09-26T07:36:50Z"
+    },
+    "_created_by": {
+      "_id": "MyUser001",
+      "Name": "Arun",
+      "Kind": "User"
+    },
+    "_flow_name": "Preview_Model001",
+    "_modified_at": {
+      "v": {
+        "__type__": "datetime",
+        "isoformat": "2024-09-26T09:51:52.278Z"
+      },
+      "td": "",
+      "tz": "GMT",
+      "dv": "2024-09-26T09:51:52Z"
+    },
+    "_modified_by": {
+      "_id": "MyUser",
+      "Name": "Arunkumar",
+      "Kind": "User"
+    },
+    "_flow_type": "Process",
+    "Name": "Preview_Model001 from Arunkumar",
+    "ProcessInstance": [
+      {
+        "_id": "ProcessDef_001",
+        "_created_by": {
+          "_id": "MyUser",
+          "Name": "Arunkumar",
+          "Kind": "User"
+        },
+        "_created_at": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T07:36:50.155Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T07:36:50Z"
+        },
+        "_modified_at": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:52.278Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:52Z"
+        },
+        "_modified_by": {
+          "_id": "MyUser",
+          "Name": "Arunkumar",
+          "Kind": "User"
+        },
+        "InstanceId": "Preview_Model001",
+        "WorkflowModelId": "Preview_Model001",
+        "ContextProcessDef": "ProcessDef_001",
+        "WorkflowType": "Sequence",
+        "Name": "Workflow",
+        "_stage": 11,
+        "_status": "InProgress",
+        "CurrentActivityInstance": "ActivityDef_001",
+        "CurrentActivityDef": "ActivityDef_001",
+        "StartActivityInstance": "ActivityDef_001",
+        "AssignedTo": [
+          {
+            "_id": "MyUser",
+            "Name": "Arunkumar",
+            "Kind": "User"
+          }
+        ],
+        "AssignedAt": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:52.278Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:52Z"
+        }
+      }
+    ],
+    "_root_process_instance": "ProcessDef_001",
+    "ActivityInstance": [
+      {
+        "_id": "ActivityDef_001",
+        "ActivityDef": "ActivityDef_001",
+        "ProcessInstance": "ProcessDef_001",
+        "_modified_at": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:47.844Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:47Z"
+        },
+        "_modified_by": {
+          "_id": "MyUser",
+          "Name": "Arunkumar",
+          "Kind": "User"
+        },
+        "RootProcess": "ProcessDef_001",
+        "ScriptName": "Start",
+        "NodeType": "StartEvent",
+        "AssignmentRule": "Default",
+        "ActualAssignedTo": [
+          {
+            "_id": "MyUser",
+            "Name": "Arunkumar",
+            "Kind": "User"
+          }
+        ],
+        "AssignedTo": [
+          {
+            "_id": "MyUser",
+            "Name": "Arunkumar",
+            "Kind": "User"
+          }
+        ],
+        "AssignedAt": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:42.023Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:42Z"
+        },
+        "_stage": 1,
+        "_status": "InProgress"
+      },
+      {
+        "_id": "ActivityDef_002",
+        "ActivityDef": "ActivityDef_002",
+        "ProcessInstance": "ProcessDef_001",
+        "PreviousActivityInstance": "ActivityDef_001",
+        "_modified_at": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:52.278Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:52Z"
+        },
+        "_modified_by": {
+          "_id": "MyUser",
+          "Name": "Arunkumar",
+          "Kind": "User"
+        },
+        "RootProcess": "ProcessDef_001",
+        "ScriptName": "Verification",
+        "NodeType": "UserTask",
+        "AssignmentRule": "Default",
+        "PreviousStep": "ActivityDef_001",
+        "ActualAssignedTo": [
+          {
+            "_id": "MyUser",
+            "Name": "Arunkumar",
+            "Kind": "User"
+          }
+        ],
+        "AssignedTo": [
+          {
+            "_id": "MyUser",
+            "Name": "Arunkumar",
+            "Kind": "User"
+          }
+        ],
+        "AssignedAt": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:47.844Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:47Z"
+        },
+        "_stage": 1,
+        "_status": "InProgress",
+        "NextActivityInstance": "ActivityDef_003"
+      },
+      {
+        "_id": "ActivityDef_003",
+        "ActivityDef": "ActivityDef_003",
+        "ProcessInstance": "ProcessDef_001",
+        "PreviousActivityInstance": "ActivityDef_002",
+        "_modified_at": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:52.278Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:52Z"
+        },
+        "_modified_by": {
+          "_id": "MyUser",
+          "Name": "Arunkumar",
+          "Kind": "User"
+        },
+        "RootProcess": "ProcessDef_001",
+        "ScriptName": "Completed",
+        "NodeType": "EndEvent",
+        "AssignmentRule": "Default",
+        "PreviousStep": "ActivityDef_002",
+        "AssignedTo": [
+          {
+            "_id": "MyUser",
+            "Name": "Arunkumar",
+            "Kind": "User"
+          }
+        ],
+        "AssignedAt": {
+          "v": {
+            "__type__": "datetime",
+            "isoformat": "2024-09-26T09:51:52.278Z"
+          },
+          "td": "",
+          "tz": "GMT",
+          "dv": "2024-09-26T09:51:52Z"
+        },
+        "_stage": 1,
+        "_status": "InProgress"
+      }
+    ],
+    "_stage": 1,
+    "_status": "InProgress",
+    "_triggered_integrations": [],
+    "_submitted_at": {
+      "v": {
+        "__type__": "datetime",
+        "isoformat": "2024-09-26T09:51:47.844Z"
+      },
+      "td": "",
+      "tz": "GMT",
+      "dv": "2024-09-26T09:51:47Z"
+    },
+    "_completed_at": {
+      "v": {
+        "__type__": "datetime",
+        "isoformat": "2024-09-26T09:51:52.278Z"
+      },
+      "td": "",
+      "tz": "GMT",
+      "dv": "2024-09-26T09:51:52Z"
+    }
+  }
+]
